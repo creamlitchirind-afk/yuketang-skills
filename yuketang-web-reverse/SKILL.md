@@ -1,6 +1,6 @@
 ---
 name: yuketang-web-reverse
-description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进与课堂报告取题（滚动翻页法、报告页导航链）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill。
+description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）与课堂报告取题（报告页导航链）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill。
 ---
 
 # 雨课堂网页结构拆解（自动化设计参考）
@@ -26,7 +26,8 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 | 单门未完成页 | `/v2/web/studentLog/{cid}?classroom_id={cid}&tab=unfinished` |
 | 学习内容页 / 公告页 | `studentLog/{cid}?...&tab=content`（学习内容）/ `tab=notify`（公告） |
 | 课件查看器 | `studentCards/{cid}/{course_id}/{card_id}/ppt?...`；「打印课件」按钮进入 `/web/print` |
-| 课件逐页阅读 | **只能滚动翻页**：`cu.scroll(500,500,-8)`；长页需上滚+8、下滚-8 组合；以右上角进度数字（如 24/46）为唯一成功判据。点击/方向键/PageDown/空格/大纲页码均无效 |
+| 课件逐页阅读 | **优先用键盘 PageDown/PageUp 一次翻 1 页，单页停留 ≥4 秒即计页**（`keybd_event` VK_NEXT `0x22` / VK_PRIOR `0x21`）；正文区滚轮不稳定（可能不翻或一次跳 3 页，跳过的页不计页）；点大纲缩略图能换页但**不计页**。以顶部「学习进度：N/M」为唯一成功判据 |
+| 课件内嵌选择题页 | PageDown 会在此页停住、页头显示「单选题 N分」+A/B/C/D+「提交」。**必须作答**：点选项（圆圈或文字）→ 点「提交」→ 自动前进、进度 +1。这类页可由自动化直接完成；点击无效时按"残留控制台遮挡 / 未最大化未前台 / 坐标过期"顺序排查后重试 |
 | 课堂回顾页 | `student-lesson-report/{cid}/{lesson_id}/{card_id}`，**非课件**，勿在其中找打印课件，也无 PPT 翻页 |
 | 课堂报告入口 | 必须 `studentLog/{cid}?tab=log` → 筛选「课堂」→ 点课堂记录进入；**直连报告 URL 会返回 errpage**（易误判为内容被删） |
 | 课件打印导出 PDF | 本机 Edge 打印流程、坐标、坑见 [references/print-and-export.md](references/print-and-export.md) |
@@ -66,7 +67,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 3. [references/api-and-request.md](references/api-and-request.md) — 接口清单、请求头、XTBZ、响应字段与直达链接规律。
 4. [references/rpa-tech-notes.md](references/rpa-tech-notes.md) — 影刀 web 环境、execute_javascript 取值、轮询/限流/缓存等工程坑。
 5. [references/print-and-export.md](references/print-and-export.md) — 课件打印导出 PDF 全流程（学习内容页/课件查看器 URL、打印按钮坐标、另存为操作、本机 Edge 登录与地址栏坑、bu CDP 打印不可用等教训）。
-6. [references/courseware-reading-and-report.md](references/courseware-reading-and-report.md) — 课件逐页阅读推进（滚动翻页法/长页组合/进度校验）与课堂报告取题（入口链路、题目弹窗、P 几页码对照）；含长任务分段推进与会话中断恢复策略。
+6. [references/courseware-reading-and-report.md](references/courseware-reading-and-report.md) — 课件逐页阅读推进（PageDown 翻页法、滚轮/大纲的局限、每页停留计页、**内嵌选择题页的识别与作答**、点击无效时的排查顺序）与课堂报告取题（入口链路、题目弹窗、P 几页码对照）；含长任务分段推进与会话中断恢复策略。
 7. [references/automation-environment-and-pitfalls.md](references/automation-environment-and-pitfalls.md) — 运行环境与已知故障：UU远程（GameViewer）远控下的桌面切换禁令、PIP 切换失败、DEVICE_OFFLINE 与云主机不可用、未完成全量扫描标准流程、进度以页面为准。
 
 ## 通用硬约束
@@ -76,7 +77,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 3. 已归档/历史课程不检测未完成；当前实际在学清单以页面真实渲染（`TcardGroup.courseData`）为准。
 4. 不要把加载中间态的数组当成最终结果（见 references/rpa-tech-notes 的"数据时序"问题）。
 5. 当前用户要求旁听课也归档且不扫描，优先于最后活跃时间规则。归档列表不返回 role，需保存已确认旁听 ID 并排除自动恢复，防止近期活跃旁听被恢复。当前实例识别记录为 `B:/05_生活文档/知识库/雨课堂旁听课程识别记录.json`；不要凭名称、旧配置或无权限页推定身份。课程清单必须来自真实列表，不得用硬编码 FALLBACK 补入缺失课程。
-6. 课件逐页阅读是长任务，必须**分段推进 + 每段记录进度数字**（如每 10 页一段），中断后从记录页续读；不要把几十页 scroll 塞进单次调用，也不要从头重读。
+6. 课件逐页阅读是长任务，必须**分段推进 + 每段记录进度数字**（如每 10 页一段），中断后从记录页续读；不要把几十页翻页塞进单次调用，也不要从头重读。翻到某页停住不动时先判断是不是内嵌选择题页（见 references/courseware-reading-and-report.md 第 2 节）。
 7. 虚拟桌面（PIP）断连后 `cu.switch_desktop("pip")` 重连实测经常连续失败；最多试 2 次，仍失败就停下说明现状并等用户处理，不要空转重试，更不要把"重连成功"当前提假设。
 8. 用户通过 UU远程（网易 GameViewer）远控本机时**禁止切换虚拟桌面**：本机只有一个交互会话，切 PIP 会替换该会话的活动桌面，远控端画面直接变成空白桌面（窗口与进程并未移动）。此时只在当前主桌面操作；操作会占用用户鼠标键盘，开始前告知、结束即释放。判定特征与排查命令见 `references/automation-environment-and-pitfalls.md`。
 9. 环境列表显示 online 不代表真能连接（曾出现列表 online、切换返回 DEVICE_OFFLINE、工具报"环境未就绪"）；遇到时先 `manage_environment` 查询并等待重连，不要反复重试同一调用。云主机（Linux）不支持 `plane="cu"`（返回 40003），`bu` 云浏览器已被用户禁用，云端不能替代本机 Edge。
