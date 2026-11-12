@@ -180,3 +180,13 @@ GET /v2/api/web/logs/learn/{cid}?actype={n}&page=0&offset=50&sort=-1
 - **`/mooc-api` 的 XTBZ 拿不到**：页面自身请求成功，页面内同步 XHR 返回 `XTBZ IS REQUIRED`；`network_requests()` 只有 url/method/status/request_id，不含请求头。想批量取全卷，得先 hook 请求头或找未提交状态的入口。
 - **课件是「文字 + 图片」混合，按形态分流**：`cards/detlist/{courseware_id}?classroom_id=` 里，文本型形状取 `Slides[].Shapes[].Paragraphs[].Lines[].Texts[].Text`（纯文本、未混淆），图片型形状是 `URL → slide/...jpg`。实测 12 份课件：8 份有文字层、4 份纯图片；抽出的文字多为标题与要点，正文解释常在图里。纯图片的才需要打印导出 PDF 或 OCR。传 `activity.id` 会 `404001`，必须用 `courseware_id`。
 - **`cards/view_depth` 的 cards_id 口径未定**：传 `activity.id` 得 `depth:0`，与 `logs/learn` 的 `view.depth`（21/21）不一致，暂以 `logs/learn` 为准。
+## 14. 课堂（type 14）的课件入口（第三轮打通）
+
+只有「课堂」没有「课件叶子」的课（如概率论与数理统计、临床医学概论、移动应用系统开发），材料只能从这里取：
+
+1. 点课堂叶子 → `/v2/web/student-lesson-report/{cid}/{courseware_id}/{activity_id}`，页面内嵌 `https://changjiang.yuketang.cn/m/v2/lesson/student/{courseware_id}`。
+2. 该页文本列出「课件 (n)」与每份页数（例 `第一节 大数定律 (15页)`）。
+3. 点开某份 → `/m/v2/lesson/student/{courseware_id}/presentation/{presentation_id}`，**全部页一次性渲染为 `<img>`**（`common_uploads/...cover*.jpg`）。
+4. 按 DOM 顺序取 slide 图 → 下载 → 合成 PDF → `pypdf` 校验页数（实测 15 页对 15 张）。
+
+坑：`type 14` 的 19 位 `courseware_id` 传给 `cards/detlist` 一律 `404001`；`presentation_id` 无 API，只能点开取；同一课堂可能有多份课件。
