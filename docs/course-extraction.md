@@ -178,5 +178,5 @@ GET /v2/api/web/logs/learn/{cid}?actype={n}&page=0&offset=50&sort=-1
 - **客观题的答案与得分是明文**：`5/5 题`、`本题得分：2`、`正确答案： BD (少选得部分分)` 可直接 `innerText` 取；只有题干、选项被字形混淆。→ 客观题能批量建答案表，主观题不能。
 - **已提交答卷是静态回放**：`.subject-item` = 5 个题号 + 1 个题面；点题号（含 mousedown/mouseup/click）、点上一题/下一题、按 `ArrowLeft` 都不改变题号显示；`window` 上没有题目全局对象。
 - **`/mooc-api` 的 XTBZ 拿不到**：页面自身请求成功，页面内同步 XHR 返回 `XTBZ IS REQUIRED`；`network_requests()` 只有 url/method/status/request_id，不含请求头。想批量取全卷，得先 hook 请求头或找未提交状态的入口。
-- **课件正文只有图**：`cards/detlist/{courseware_id}?classroom_id=` 的 `Slides[].Shapes[].URL` 全为 `slide/...jpg`，无文本层；传 `activity.id` 会 `404001`。本地化只能走打印导出 PDF、下图片或 OCR。
+- **课件是「文字 + 图片」混合，按形态分流**：`cards/detlist/{courseware_id}?classroom_id=` 里，文本型形状取 `Slides[].Shapes[].Paragraphs[].Lines[].Texts[].Text`（纯文本、未混淆），图片型形状是 `URL → slide/...jpg`。实测 12 份课件：8 份有文字层、4 份纯图片；抽出的文字多为标题与要点，正文解释常在图里。纯图片的才需要打印导出 PDF 或 OCR。传 `activity.id` 会 `404001`，必须用 `courseware_id`。
 - **`cards/view_depth` 的 cards_id 口径未定**：传 `activity.id` 得 `depth:0`，与 `logs/learn` 的 `view.depth`（21/21）不一致，暂以 `logs/learn` 为准。
