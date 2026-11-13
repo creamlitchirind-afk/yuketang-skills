@@ -190,3 +190,78 @@ GET /v2/api/web/logs/learn/{cid}?actype={n}&page=0&offset=50&sort=-1
 4. 按 DOM 顺序取 slide 图 → 下载 → 合成 PDF → `pypdf` 校验页数（实测 15 页对 15 张）。
 
 坑：`type 14` 的 19 位 `courseware_id` 传给 `cards/detlist` 一律 `404001`；`presentation_id` 无 API，只能点开取；同一课堂可能有多份课件。
+
+## 15. 课堂课件批量落 PDF（实战：三轮课 57 份 / 1780 页）
+
+把 §14 的人工步骤写成可重跑脚本，三门「只有课堂」的课一次性落盘：
+
+| 课程 | 课堂数 | 产出 | 页数 |
+|---|---|---|---|
+| 概率论与数理统计 | 20 | 36 份 | 1027 |
+| 临床医学概论（乙） | 12 | 11 份 | 492 |
+| 移动应用系统开发 | 11 | 10 份 | 261 |
+
+**卡片 ref 只能这样取**：概览页 snapshot 里以 `box "… (n 页) 习题"` 结尾的行，取该行 `nNN`。按文本匹配卡片标题会数出 2 份/4 份（DOM 多层嵌套），生成「第2份」「第4份」这种错名——这是全流程唯一踩到的坑。
+
+**脚本骨架（必须写成可续跑）**：
+
+```python
+# 1. 概览页取卡片 ref
+s = str(bu.snapshot(view="interactive", max_chars=4500))
+refs = [re.search(r'\b(n\d+)\b', ln).group(1)
+        for ln in s.splitlines() if "页)" in ln and "习题" in ln]   # 去重后使用
+
+# 2. 每份课件：回概览页 → 重新取 ref（导航会让 ref 失效）→ 点第 i 个 → 拿 presentation_id
+bu.navigate(overview); bu.wait(4); refs = card_refs(); bu.click(refs[i])
+if "presentation/" not in bu.page_info()["url"]: continue
+
+# 3. 目标 PDF 已存在就跳过（5 分钟上限靠这条续跑）
+path = os.path.join(outdir, name + ".pdf")
+if os.path.exists(path): continue
+
+# 4. 全页一次性渲染，直接取所有 slide 图
+urls = json.loads(bu.js("(()=>{return JSON.stringify(Array.from(document.querySelectorAll('img'))"
+                        ".map(i=>i.src).filter(s=>/common_uploads|slide/.test(s)))})()"))
+# 5. 并发下载（配 ProxyHandler({}) 走直连，不经本机代理）→ PIL 合成 → pypdf 校验
+```
+
+命名：标题去掉所有空白；同一次课堂有多份课件时追加 `_课件1/_课件2`。合成参数 150 dpi、长边 ≤1600 px，页数与平台 `(n 页)` 逐一核对。
+
+**去重要用 sha256，不能只看大小**：实测出现过 4 组 PDF 字节数完全相同（如两份都 3824 KB），哈希复核后内容不同，按大小合并会误删。
+
+## 16. 缺口要分三类，别混成一句「抓不到」
+
+| 类型 | 判据 | 结论 |
+|---|---|---|
+| 平台未挂课件 | 概览页显示「课件(0)」 | 内容不存在，不是抓取失败 |
+| 页面无图 | 打开 presentation 后 DOM 无 `common_uploads` 图片 | 可能是纯文字/外链课件，需换形态判定 |
+| 需 XTBZ | 答卷页 `/mooc-api` 返回 `40000` | 已提交答卷拿不到，封存 |
+
+实例：临床有 3 次课堂（`肾小球疾病.3（2）`、`肾小球疾病.3（3）`、`9月4日授课`）属第一类；移动有 2 次（`2026.05实验框架和组件2` 无图、`2026.01小程序编程基础` 未生成）属第二类。写进 README 时按类分列，别让读者以为是同一件事。
+
+## 17. 客观题答案库：能做「半自动增量」，做不成全量
+
+范围先算清：13 个班 147 个活动里 `type 16` 只有 4 个，全在传感器技术（`33718605` 压电 / `33718619` 光电 / `33718624` 化学 / `33718628` 生物），各 5 题，上限 20 题。
+
+做不成全量的 7 条实测原因：一次只显示 1 题｜题号切换（`.J_order` 三连派发、上一题/下一题、`ArrowLeft`）全部无效｜已提交答卷首屏一次性写入、之后不再发请求｜页内 XHR 一律 `XTBZ IS REQUIRED`｜无 CDP 可挂（`Session ... not found`）｜题干字形每次渲染随机重排，同题两次读到不同乱码，不能按文本去重｜`actype=16` 查不到，只能从 `actype=-1` 全量里筛。
+
+所以落成「录一题 → 追加一行 → 自动重建索引」：
+
+```
+题库/
+├─ 记录一题.py      # --course --activity --no --total --type --options --answer --score --shot
+├─ 题库记录.jsonl   # 追加式真相源
+├─ 题库索引.md      # 按课程分组自动生成（勿手改）
+├─ 截图/            # 题面只能靠截图（字形映射随机）
+└─ 采集说明.md
+```
+
+要点：同一 `(course, activity, no)` 重复录入自动跳过，`--force` 覆盖；`--index-only` 只重建索引；截图文件名 `课程_活动_题号of总数.png`，脚本负责拷贝，原始临时截图可丢。
+
+## 18. 仓库与文件搬运的坑（踩过才记住）
+
+- **搬 git 仓库不能用 `Copy-Item -Recurse`**：`.git` 是隐藏目录，漏了只剩一堆散文件。用 `robocopy <源> <目标> /E /COPY:DAT /DCOPY:DAT`。
+- `/COPYALL` 在普通权限下直接失败：`ERROR : You do not have the Manage Auditing user right.`（exit 16），它要复制审核信息。改 `/COPY:DAT` 即可。
+- 搬完先校验再删原件：`git remote -v`（origin 对）、`git log --oneline -1`（首提交对）、`git rev-parse --abbrev-ref HEAD`（分支对）、`git status --porcelain`（干净）、源/目标文件数一致（实测 52/52）。
+- **同名不同仓库要分清**：技能包仓库走 `main`，经验文档仓库走 `master`、只有 `docs/` 一份；两个都叫「yuketang」相关目录时，先 `git branch` 再动手，否则会互相覆盖。
+- **临时工作目录别建在盘符根**：顶层 `08_xxx` 会和既有编号目录打架，任务目录要在知识库 `08_会话工作区/<项目>/<日期_任务简称>/` 下。
