@@ -1,6 +1,6 @@
 ---
 name: yuketang-web-reverse
-description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）与课堂报告取题（报告页导航链）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill。
+description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）、课堂报告取题（报告页导航链）与客观题选择/提交（作业 iframe 逐题提交、PPT 内嵌课堂单选题的真实点击法）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill。
 ---
 
 # 雨课堂网页结构拆解（自动化设计参考）
@@ -69,6 +69,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 5. [references/print-and-export.md](references/print-and-export.md) — 课件打印导出 PDF 全流程（学习内容页/课件查看器 URL、打印按钮坐标、另存为操作、本机 Edge 登录与地址栏坑、bu CDP 打印不可用等教训）。
 6. [references/courseware-reading-and-report.md](references/courseware-reading-and-report.md) — 课件逐页阅读推进（PageDown 翻页法、滚轮/大纲的局限、每页停留计页、**内嵌选择题页的识别与作答**、点击无效时的排查顺序）与课堂报告取题（入口链路、题目弹窗、P 几页码对照）；含长任务分段推进与会话中断恢复策略。
 7. [references/automation-environment-and-pitfalls.md](references/automation-environment-and-pitfalls.md) — 运行环境与已知故障：UU远程（GameViewer）远控下的桌面切换禁令、PIP 切换失败、DEVICE_OFFLINE 与云主机不可用、未完成全量扫描标准流程、进度以页面为准。
+8. [references/answer-selection-and-submit.md](references/answer-selection-and-submit.md) — **客观题选择与提交**：作业/课前测 iframe 的逐题提交语义（选完点提交=交本题并进下一题；多题弹窗→帮我提交）、iframe 坐标偏移换算、PPT 内嵌「课堂单选题」的真实点击法与成功判据；含 JS 点击只变色不生效、提交按钮被裁到视口外等坑。
 
 ## 通用硬约束
 
