@@ -70,6 +70,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 6. [references/courseware-reading-and-report.md](references/courseware-reading-and-report.md) — 课件逐页阅读推进（PageDown 翻页法、滚轮/大纲的局限、每页停留计页、**内嵌选择题页的识别与作答**、点击无效时的排查顺序）与课堂报告取题（入口链路、题目弹窗、P 几页码对照）；含长任务分段推进与会话中断恢复策略。
 7. [references/automation-environment-and-pitfalls.md](references/automation-environment-and-pitfalls.md) — 运行环境与已知故障：UU远程（GameViewer）远控下的桌面切换禁令、PIP 切换失败、DEVICE_OFFLINE 与云主机不可用、未完成全量扫描标准流程、进度以页面为准。
 8. [references/answer-selection-and-submit.md](references/answer-selection-and-submit.md) — **客观题选择与提交**：作业/课前测 iframe 的逐题提交语义（选完点提交=交本题并进下一题；多题弹窗→帮我提交）、iframe 坐标偏移换算、PPT 内嵌「课堂单选题」的真实点击法与成功判据；含 JS 点击只变色不生效、提交按钮被裁到视口外等坑。
+9. [references/chapter-test-sessions.md](references/chapter-test-sessions.md) — **章节测试（作业 exercise）连续作答实战**：每份试卷一套独立混淆字体（按卷取 ttf 再渲染，否则是"假汉字"）、`xuetangx-com-encrypted-font` 分段渲染规则、底部「提交」= 逐题提交并即时判分、`c27/anti-cheat` 安全核验的触发规律（批量快切/连提交必弹，真实点击同样弹，放慢到每题 3–5 秒可压制，遇弹必交真人）、合成事件序列 vs 坐标点击的取舍、整卷 overlay 渲染与按题块分屏读题、作业模块 13×2.308 分口径与成绩单新标签读法。
 
 ## 通用硬约束
 
