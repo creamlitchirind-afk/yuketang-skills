@@ -26,7 +26,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 | 单门未完成页 | `/v2/web/studentLog/{cid}?classroom_id={cid}&tab=unfinished` |
 | 学习内容页 / 公告页 | `studentLog/{cid}?...&tab=content`（学习内容）/ `tab=notify`（公告） |
 | 课件查看器 | `studentCards/{cid}/{course_id}/{card_id}/ppt?...`；「打印课件」按钮进入 `/web/print` |
-| 课件逐页阅读 | **优先用键盘 PageDown/PageUp 一次翻 1 页，单页停留 ≥4 秒即计页**（`keybd_event` VK_NEXT `0x22` / VK_PRIOR `0x21`）；正文区滚轮不稳定（可能不翻或一次跳 3 页，跳过的页不计页）；点大纲缩略图能换页但**不计页**。以顶部「学习进度：N/M」为唯一成功判据 |
+| 课件逐页阅读 | **优先用键盘 PageDown/PageUp 一次翻 1 页，单页停留 ≥4 秒即计页**（`keybd_event` VK_NEXT `0x22` / VK_PRIOR `0x21`）；正文区滚轮不稳定（可能不翻或一次跳 3 页，跳过的页不计页）；点大纲缩略图能换页但**不计页**。以顶部「学习进度：N/M」为唯一成功判据。云浏览器 `bu` 下改用正文区真实垂直拖拽（小幅度一次 1 页），缩略图只记已读不切主视图，详见 reference 10 |
 | 课件内嵌选择题页 | PageDown 会在此页停住、页头显示「单选题 N分」+A/B/C/D+「提交」。**必须作答**：点选项（圆圈或文字）→ 点「提交」→ 自动前进、进度 +1。这类页可由自动化直接完成；点击无效时按"残留控制台遮挡 / 未最大化未前台 / 坐标过期"顺序排查后重试 |
 | 课堂回顾页 | `student-lesson-report/{cid}/{lesson_id}/{card_id}`，**非课件**，勿在其中找打印课件，也无 PPT 翻页 |
 | 课堂报告入口 | 必须 `studentLog/{cid}?tab=log` → 筛选「课堂」→ 点课堂记录进入；**直连报告 URL 会返回 errpage**（易误判为内容被删） |
@@ -71,6 +71,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 7. [references/automation-environment-and-pitfalls.md](references/automation-environment-and-pitfalls.md) — 运行环境与已知故障：UU远程（GameViewer）远控下的桌面切换禁令、PIP 切换失败、DEVICE_OFFLINE 与云主机不可用、未完成全量扫描标准流程、进度以页面为准。
 8. [references/answer-selection-and-submit.md](references/answer-selection-and-submit.md) — **客观题选择与提交**：作业/课前测 iframe 的逐题提交语义（选完点提交=交本题并进下一题；多题弹窗→帮我提交）、iframe 坐标偏移换算、PPT 内嵌「课堂单选题」的真实点击法与成功判据；含 JS 点击只变色不生效、提交按钮被裁到视口外等坑。
 9. [references/chapter-test-sessions.md](references/chapter-test-sessions.md) — **章节测试（作业 exercise）连续作答实战**：每份试卷一套独立混淆字体（按卷取 ttf 再渲染，否则是"假汉字"）、`xuetangx-com-encrypted-font` 分段渲染规则、底部「提交」= 逐题提交并即时判分、`c27/anti-cheat` 安全核验的触发规律（批量快切/连提交必弹，真实点击同样弹，放慢到每题 3–5 秒可压制，遇弹必交真人）、合成事件序列 vs 坐标点击的取舍、整卷 overlay 渲染与按题块分屏读题、作业模块 13×2.308 分口径与成绩单新标签读法。
+10. [references/ppt-reading-and-inline-quiz-bu.md](references/ppt-reading-and-inline-quiz-bu.md) — **云浏览器 `bu` 下的 PPT 阅读计时与内嵌题补完**：真实垂直拖拽翻页（小幅度一次 1 页，大拖可能跳 8 页）、每页停留约 4 秒才计页、缩略图只记已读不切主视图、后台过渡卡住时先 `Page.bringToFront` 且不要禁用全部过渡/覆盖 active slide 的 transform、0.6 缩放让题卡完整可见、单选与多选（`MultipleChoiceMA`）真实点选后必须点「提交」并回读「正确」+进度 +1、已截止作业/视频的识别与缺口记录。
 
 ## 通用硬约束
 

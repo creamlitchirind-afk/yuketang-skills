@@ -4,7 +4,7 @@
 
 | 技能 | 用途 |
 |---|---|
-| [`yuketang-web-reverse`](yuketang-web-reverse/SKILL.md) | 学生端网页与接口结构拆解：课程清单接口、单门课程未完成扫描、课件逐页阅读推进（PageDown 翻页、每页停留计页、**内嵌选择题作答**）、课堂报告取题、课件打印导出、**客观题选择与提交（作业逐题提交 / PPT 内嵌单选题真实点击法）**；含运行环境与故障排查（远控禁切虚拟桌面、PIP 切换失败、DEVICE_OFFLINE 等） |
+| [`yuketang-web-reverse`](yuketang-web-reverse/SKILL.md) | 学生端网页与接口结构拆解：课程清单接口、单门课程未完成扫描、课件逐页阅读推进（PageDown 翻页、每页停留计页、**内嵌选择题作答**）、课堂报告取题、课件打印导出、**客观题选择与提交（作业逐题提交 / PPT 内嵌单选题真实点击法 / 云浏览器下的拖拽翻页与阅读计时）**；含运行环境与故障排查（远控禁切虚拟桌面、PIP 切换失败、DEVICE_OFFLINE 等） |
 | [`yuketang-homework-auto-fill`](yuketang-homework-auto-fill/SKILL.md) | 主观题作业自动填写：定位 UEditor → 官方 API 写入 → 读回校验 → **不提交**，把纯文本答案交给用户自行提交 |
 
 ## 目录结构
@@ -21,6 +21,7 @@ yuketang-web-reverse/
     ├── courseware-reading-and-report.md   # 课件逐页阅读与课堂报告取题
     ├── answer-selection-and-submit.md     # 客观题选择与提交（作业 / PPT 内嵌题）
     ├── chapter-test-sessions.md           # 章节测试连续作答实战（按卷字体解码、逐题提交、风控节奏）
+    ├── ppt-reading-and-inline-quiz-bu.md  # 云浏览器 PPT 阅读计时与内嵌题补完
     └── automation-environment-and-pitfalls.md  # 运行环境与已知故障
 yuketang-homework-auto-fill/
 └── SKILL.md
@@ -32,6 +33,7 @@ yuketang-homework-auto-fill/
 |---|---|
 | [`docs/course-extraction.md`](docs/course-extraction.md) | 课程全量提取方法（2026-11 实战沉淀）：三层结构落点、`logs/learn` 分区与类型矩阵、作业两套链路（试卷 type 4 / 作业 type 19）、题面字体混淆与截图取证、课件进度与正文接口、成绩单模块口径、**"未批改 ≠ 0 分"的分数判读顺序**、批量提取的标签页与进程卫生、查重与落盘结构、8 条常见坑、13 项检查清单 |
 | [`yuketang-web-reverse/references/chapter-test-sessions.md`](yuketang-web-reverse/references/chapter-test-sessions.md) | 章节测试连续作答实战（2026-11-17 实战沉淀）：每份试卷**一套独立混淆字体**（按卷取 `exam_font_*.ttf` 再渲染，用错就是"假汉字"）、`xuetangx-com-encrypted-font` 分段渲染与断行规则、底部「提交」= **逐题提交并即时判分**、`c27/anti-cheat` **安全核验触发规律与压制**（批量快切/连提交必弹，真实点击同样弹，放慢到每题 3–5 秒可压低，遇弹必交真人）、合成事件序列 vs 坐标点击取舍、整卷 overlay 渲染 + 按题块分屏读题、作业模块 13×2.308 分口径与成绩单新标签读法、10 条坑 |
+| [`yuketang-web-reverse/references/ppt-reading-and-inline-quiz-bu.md`](yuketang-web-reverse/references/ppt-reading-and-inline-quiz-bu.md) | 云浏览器 `bu` 下的 PPT 阅读计时与内嵌题补完（2026-11-17 实战）：缩略图不切主视图、真实拖拽翻页、每页停约 4 秒才计页、后台过渡卡住与 z-index 残留处理、0.6 缩放、单选/多选真实点选 + 「提交」回读、已截止作业/视频判断 |
 
 ## 使用约定（重要）
 
