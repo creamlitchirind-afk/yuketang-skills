@@ -2,6 +2,26 @@
 
 面向长江雨课堂学生端（`changjiang.yuketang.cn`）的两个可复用技能（Skill），按 `SKILL.md` 规范组织，可被支持该规范的 Agent 直接加载。
 
+> **给 AI：首次拉取本仓库，先读 [AI_START_HERE.md](AI_START_HERE.md)。**
+
+## AI 启动说明
+
+如果用户说“拉取 GitHub 上的雨课堂能力库并开始执行”，先读 [`AI_START_HERE.md`](AI_START_HERE.md)。里面有：
+
+- 拉取后的读取顺序（README → AI_START_HERE → SKILL.md → 对应 reference）
+- 任务类型 → reference 的路由表
+- 拉取成功后的首次回复格式
+- 只读默认、提交例外、验证码交接、记录按角色/类型分栏等硬约束
+
+用户可直接复制：
+
+```text
+拉取 https://github.com/creamlitchirind-afk/yuketang-skills.git，
+读 AI_START_HERE.md，按里面的路由开始执行：
+课程【课程名】，任务【具体任务】，产出【清单/PDF/Markdown/截图】。
+```
+
+
 | 技能 | 用途 |
 |---|---|
 | [`yuketang-web-reverse`](yuketang-web-reverse/SKILL.md) | 学生端网页与接口结构拆解：课程清单接口、单门课程未完成扫描、课件逐页阅读推进（PageDown 翻页、每页停留计页、**内嵌选择题作答**）、课堂报告取题、课件打印导出、**客观题选择与提交（作业逐题提交 / PPT 内嵌单选题真实点击法 / 云浏览器下的拖拽翻页与阅读计时）**；含运行环境与故障排查（远控禁切虚拟桌面、PIP 切换失败、DEVICE_OFFLINE 等） |
@@ -10,6 +30,7 @@
 ## 目录结构
 
 ```
+AI_START_HERE.md                        # 给执行本仓库的 AI 的启动说明
 yuketang-web-reverse/
 ├── SKILL.md
 └── references/
