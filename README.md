@@ -44,6 +44,7 @@ yuketang-web-reverse/
     ├── answer-selection-and-submit.md     # 客观题选择与提交（作业 / PPT 内嵌题）
     ├── chapter-test-sessions.md           # 章节测试连续作答实战（按卷字体解码、逐题提交、风控节奏）
     ├── ppt-reading-and-inline-quiz-bu.md  # 云浏览器 PPT 阅读计时与内嵌题补完
+    ├── ai-companion-and-open-assignment.md # AI 学伴计分与开放型作业写入
     └── automation-environment-and-pitfalls.md  # 运行环境与已知故障
 yuketang-homework-auto-fill/
 └── SKILL.md
@@ -58,6 +59,7 @@ yuketang-unfinished-watch/
 | [`docs/course-extraction.md`](docs/course-extraction.md) | 课程全量提取方法（2026-11 实战沉淀）：三层结构落点、`logs/learn` 分区与类型矩阵、作业两套链路（试卷 type 4 / 作业 type 19）、题面字体混淆与截图取证、课件进度与正文接口、成绩单模块口径、**"未批改 ≠ 0 分"的分数判读顺序**、批量提取的标签页与进程卫生、查重与落盘结构、8 条常见坑、13 项检查清单 |
 | [`yuketang-web-reverse/references/chapter-test-sessions.md`](yuketang-web-reverse/references/chapter-test-sessions.md) | 章节测试连续作答实战（2026-11-17 初版 / 2026-11-18 补充实测）：**题面解码方法优先级（P0 浏览器内本卷字体渲染 + 分屏截图，实测 29 题全对拿满 2.308；P1 字体 `cmap` 字形名 / P2 PIL 位图匹配仅兜底，本卷相似度全 <0.62）**、每份试卷一套独立 `exam_font_*.ttf`、加密段必须逐个 span 设字体（漏设/`font-size:0` 都会得到假汉字或空白）、底部「提交」= **逐题提交、提交后自动跳下一题**、`c27/anti-cheat` 安全核验触发规律与压制（放慢到每题 3–5 秒，遇弹必交真人）、合成事件 vs 坐标点击取舍、整卷 overlay 每屏 6 题 + 按题块分屏、13×2.308 分口径与成绩单新标签读法、14 条坑 |
 | [`yuketang-web-reverse/references/ppt-reading-and-inline-quiz-bu.md`](yuketang-web-reverse/references/ppt-reading-and-inline-quiz-bu.md) | 云浏览器 `bu` 下的 PPT 阅读计时与内嵌题补完（2026-11-17 初版 / 2026-11-18 传感器四实验补充）：缩略图不切主视图、真实拖拽翻页、**轻量页约 4 秒、密集页 15–45 秒才计页（进度可能批量 +2）**、后台过渡卡住与 z-index 残留处理、0.6 缩放、单选/多选真实点选 + 「提交」回读、已截止作业/视频判断、**按角色/任务类型分栏记录且已截止项复查不重复播报** |
+| [`yuketang-web-reverse/references/ai-companion-and-open-assignment.md`](yuketang-web-reverse/references/ai-companion-and-open-assignment.md) | AI 学伴计分与开放型作业写入（2026-11-23 实战）：AI学伴**按对话次数区间计分**（0–24=0 / 25–49=25 / 50–99=50 / ≥100=100，成绩单按 10 分折算；实测 82 次 5/10 → 101 次 10/10）、面板 iframe（`chatbot-window?chat_window_id=…`）定位与计数核对节奏；开放型作业 UEditor **无 `UE.instants`** 时走 `.edui-editor-iframeholder iframe` + `execCommand('insertHTML')` 分段写入 + 字数读回校验、**只写不代提交**、「已完成 0.000」= 待批改而非空交；含成绩单总分/模块正则与读数联动 |
 
 ## 使用约定（重要）
 

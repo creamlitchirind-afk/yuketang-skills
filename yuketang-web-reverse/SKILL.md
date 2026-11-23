@@ -1,6 +1,6 @@
 ---
 name: yuketang-web-reverse
-description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）、课堂报告取题（报告页导航链）与客观题选择/提交（作业 iframe 逐题提交、PPT 内嵌课堂单选题的真实点击法）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill。
+description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）、课堂报告取题（报告页导航链）与客观题选择/提交（作业 iframe 逐题提交、PPT 内嵌课堂单选题的真实点击法）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill；AI学伴对话次数计分与开放型作业 UEditor 写入见 reference 10。
 ---
 
 # 雨课堂网页结构拆解（自动化设计参考）
@@ -71,7 +71,8 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 7. [references/automation-environment-and-pitfalls.md](references/automation-environment-and-pitfalls.md) — 运行环境与已知故障：UU远程（GameViewer）远控下的桌面切换禁令、PIP 切换失败、DEVICE_OFFLINE 与云主机不可用、未完成全量扫描标准流程、进度以页面为准。
 8. [references/answer-selection-and-submit.md](references/answer-selection-and-submit.md) — **客观题选择与提交**：作业/课前测 iframe 的逐题提交语义（选完点提交=交本题并进下一题；多题弹窗→帮我提交）、iframe 坐标偏移换算、PPT 内嵌「课堂单选题」的真实点击法与成功判据；含 JS 点击只变色不生效、提交按钮被裁到视口外等坑。
 9. [references/chapter-test-sessions.md](references/chapter-test-sessions.md) — **章节测试（作业 exercise）连续作答实战**：**题面解码方法优先级（P0 = 浏览器内用本卷字体渲染 + 分屏截图，实测 29 题全对 2.308 满分；P1 字体 `cmap` 字形名、P2 PIL 位图匹配仅作兜底，本卷相似度全 <0.62 不可批量使用）**、按卷取 ttf 与分段渲染规则（加密段必须逐个 span 设字体，漏了就是"假汉字"）、底部「提交」= 逐题提交且**提交后自动跳下一题**、`c27/anti-cheat` 安全核验的触发规律（批量快切/连提交必弹，真实点击同样弹，放慢到每题 3–5 秒可压制，遇弹必交真人）、合成事件序列 vs 坐标点击的取舍、整卷 overlay 渲染（每屏 6 题）与按题块分屏读题、作业模块 13×2.308 分口径与成绩单新标签读法。
-10. [references/ppt-reading-and-inline-quiz-bu.md](references/ppt-reading-and-inline-quiz-bu.md) — **云浏览器 `bu` 下的 PPT 阅读计时与内嵌题补完**：真实垂直拖拽翻页（小幅度一次 1 页，大拖可能跳 8 页）、**轻量页约 4 秒、密集页/大图页 15–45 秒才计页（进度可能批量 +2）**、缩略图只记已读不切主视图、后台过渡卡住时先 `Page.bringToFront` 且不要禁用全部过渡/覆盖 active slide 的 transform、0.6 缩放让题卡完整可见、单选与多选（`MultipleChoiceMA`）真实点选后必须点「提交」并回读「正确」+进度 +1、已截止作业/视频的识别与缺口记录、**记录先按课程角色再按任务类型分栏且已截止项复查不重复播报**。
+10. [references/ai-companion-and-open-assignment.md](references/ai-companion-and-open-assignment.md) — **AI 学伴计分与开放型作业写入**：AI学伴按「对话次数」区间计分（0–24=0 / 25–49=25 / 50–99=50 / ≥100=100，成绩单按 10 分折算，实测 82 次拿 5/10、补到 101 次拿 10/10）、面板 iframe 定位与计数核对节奏；开放型作业 UEditor 无 `UE.instants` 时走 `.edui-editor-iframeholder iframe` + `execCommand('insertHTML')` 分段写入与字数校验、**写完不代提交**、「已完成 0.000」= 待批改而非空交。
+11. [references/ppt-reading-and-inline-quiz-bu.md](references/ppt-reading-and-inline-quiz-bu.md) — **云浏览器 `bu` 下的 PPT 阅读计时与内嵌题补完**：真实垂直拖拽翻页（小幅度一次 1 页，大拖可能跳 8 页）、**轻量页约 4 秒、密集页/大图页 15–45 秒才计页（进度可能批量 +2）**、缩略图只记已读不切主视图、后台过渡卡住时先 `Page.bringToFront` 且不要禁用全部过渡/覆盖 active slide 的 transform、0.6 缩放让题卡完整可见、单选与多选（`MultipleChoiceMA`）真实点选后必须点「提交」并回读「正确」+进度 +1、已截止作业/视频的识别与缺口记录、**记录先按课程角色再按任务类型分栏且已截止项复查不重复播报**。
 
 ## 通用硬约束
 
