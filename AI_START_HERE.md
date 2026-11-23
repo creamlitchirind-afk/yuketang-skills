@@ -48,6 +48,7 @@ git log -1 --oneline
 | DOM、Vue 组件、选择器 | `references/dom-and-vue.md` | 优先浏览器内 JS + 页面内 fetch，不靠屏幕坐标猜 |
 | 运行环境、远控、PIP、DEVICE_OFFLINE | `references/automation-environment-and-pitfalls.md` | 先排查环境，不要反复重试同一调用 |
 | 全量课程提取、成绩单口径、查重 | `docs/course-extraction.md` | 按文档的分区、类型矩阵和“未批改 ≠ 0 分”顺序读 |
+| 未完成巡检 / 定时汇报 / 课程数归并 | `yuketang-unfinished-watch/SKILL.md` | 先归并「N 门课（M 个班次）」，只报可做项；全无待办改报成绩构成 |
 | 影刀/RPA 环境与 JS | `references/rpa-tech-notes.md` | 注意 `execute_javascript` 的返回值和限流 |
 
 ### 最小能力清单

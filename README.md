@@ -26,6 +26,7 @@
 |---|---|
 | [`yuketang-web-reverse`](yuketang-web-reverse/SKILL.md) | 学生端网页与接口结构拆解：课程清单接口、单门课程未完成扫描、课件逐页阅读推进（PageDown 翻页、每页停留计页、**内嵌选择题作答**）、课堂报告取题、课件打印导出、**客观题选择与提交（作业逐题提交 / PPT 内嵌单选题真实点击法 / 云浏览器下的拖拽翻页与阅读计时）**；含运行环境与故障排查（远控禁切虚拟桌面、PIP 切换失败、DEVICE_OFFLINE 等） |
 | [`yuketang-homework-auto-fill`](yuketang-homework-auto-fill/SKILL.md) | 主观题作业自动填写：定位 UEditor → 官方 API 写入 → 读回校验 → **不提交**，把纯文本答案交给用户自行提交 |
+| [`yuketang-unfinished-watch`](yuketang-unfinished-watch/SKILL.md) | 未完成待办巡检与汇报：每轮自动发现全部课程、按课程名归并同名班次报「N 门课（M 个班次）」、只读扫描未完成、剔除已超时/已截止/未签到/上课中等不可做项、与基线比对新增、可选 Qmsg 推送，按“分课分节”版式汇报，全无待办时改报成绩构成 |
 
 ## 目录结构
 
@@ -46,6 +47,8 @@ yuketang-web-reverse/
     └── automation-environment-and-pitfalls.md  # 运行环境与已知故障
 yuketang-homework-auto-fill/
 └── SKILL.md
+yuketang-unfinished-watch/
+└── SKILL.md                            # 未完成巡检、归并课程数、基线比对与汇报版式
 ```
 
 ## 方法文档
