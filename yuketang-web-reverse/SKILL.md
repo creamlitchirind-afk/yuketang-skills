@@ -1,6 +1,6 @@
 ---
 name: yuketang-web-reverse
-description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）、课堂报告取题（报告页导航链）与客观题选择/提交（作业 iframe 逐题提交、PPT 内嵌课堂单选题的真实点击法）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill；AI学伴对话次数计分与开放型作业 UEditor 写入见 reference 10。
+description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口结构拆解，用于设计 RPA / 浏览器自动化（课程清单、未完成任务扫描、归档/恢复、任务跳转链接），以及课件逐页阅读推进（PageDown 翻页、每页停留计页、内嵌选择题页作答）、课堂报告取题（报告页导航链）与客观题选择/提交（作业 iframe 逐题提交、PPT 内嵌课堂单选题的真实点击法）。涵盖 DOM 选择器、Vue 组件树、courses/list 接口、XTBZ 反爬与请求头、影刀 web 环境配置、execute_javascript 取值要点与限流坑。需要在雨课堂上"读数据/做自动化"而不是"写主观题"时使用；写主观题另见 yuketang-homework-auto-fill；AI学伴对话次数计分与开放型作业 UEditor 写入见 reference 10；视频任务播完计时（视口越界、`unload` 强制暂停、完成判据）见 reference 12。
 ---
 
 # 雨课堂网页结构拆解（自动化设计参考）
@@ -31,6 +31,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 | 课堂回顾页 | `student-lesson-report/{cid}/{lesson_id}/{card_id}`，**非课件**，勿在其中找打印课件，也无 PPT 翻页 |
 | 课堂报告入口 | 必须 `studentLog/{cid}?tab=log` → 筛选「课堂」→ 点课堂记录进入；**直连报告 URL 会返回 errpage**（易误判为内容被删） |
 | 课件打印导出 PDF | 本机 Edge 打印流程、坐标、坑见 [references/print-and-export.md](references/print-and-export.md) |
+| 视频学习页 | `/ai-workspace/lms-graph/{cid}/video/{video_id}?node_id=...&is_chapter=1`；`bu` 视口仅 219px 宽，播放按钮必在视口外，**改容器尺寸再真点击**，且 `unload` 类会强制 pause（详见 reference 12） |
 | 归档入口 | 首页 `.headerButtonGroup .text-btn`（文本"我的归档"），归档组件 `archiveDialog-components` |
 | 登录方式 | 登录页 `/web?next=/v2/web/index&type=3`；勾选协议后点「微信快捷登录」文本链接 → 授权卡片绿色按钮，全程网页内完成，无需打开微信/扫码（详见下文「登录机制」） |
 | 运行环境 | 用户用 **UU远程（GameViewer）** 远控本机；远控期间**禁止切 PIP**，只在当前主桌面操作（判据与排查见 [references/automation-environment-and-pitfalls.md](references/automation-environment-and-pitfalls.md)） |
@@ -73,6 +74,7 @@ description: 长江雨课堂（changjiang.yuketang.cn）学生端网页与接口
 9. [references/chapter-test-sessions.md](references/chapter-test-sessions.md) — **章节测试（作业 exercise）连续作答实战**：**题面解码方法优先级（P0 = 浏览器内用本卷字体渲染 + 分屏截图，实测 29 题全对 2.308 满分；P1 字体 `cmap` 字形名、P2 PIL 位图匹配仅作兜底，本卷相似度全 <0.62 不可批量使用）**、按卷取 ttf 与分段渲染规则（加密段必须逐个 span 设字体，漏了就是"假汉字"）、底部「提交」= 逐题提交且**提交后自动跳下一题**、`c27/anti-cheat` 安全核验的触发规律（批量快切/连提交必弹，真实点击同样弹，放慢到每题 3–5 秒可压制，遇弹必交真人）、合成事件序列 vs 坐标点击的取舍、整卷 overlay 渲染（每屏 6 题）与按题块分屏读题、作业模块 13×2.308 分口径与成绩单新标签读法。
 10. [references/ai-companion-and-open-assignment.md](references/ai-companion-and-open-assignment.md) — **AI 学伴计分与开放型作业写入**：AI学伴按「对话次数」区间计分（0–24=0 / 25–49=25 / 50–99=50 / ≥100=100，成绩单按 10 分折算，实测 82 次拿 5/10、补到 101 次拿 10/10）、面板 iframe 定位与计数核对节奏；开放型作业 UEditor 无 `UE.instants` 时走 `.edui-editor-iframeholder iframe` + `execCommand('insertHTML')` 分段写入与字数校验、**写完不代提交**、「已完成 0.000」= 待批改而非空交。
 11. [references/ppt-reading-and-inline-quiz-bu.md](references/ppt-reading-and-inline-quiz-bu.md) — **云浏览器 `bu` 下的 PPT 阅读计时与内嵌题补完**：真实垂直拖拽翻页（小幅度一次 1 页，大拖可能跳 8 页）、**轻量页约 4 秒、密集页/大图页 15–45 秒才计页（进度可能批量 +2）**、缩略图只记已读不切主视图、后台过渡卡住时先 `Page.bringToFront` 且不要禁用全部过渡/覆盖 active slide 的 transform、0.6 缩放让题卡完整可见、单选与多选（`MultipleChoiceMA`）真实点选后必须点「提交」并回读「正确」+进度 +1、已截止作业/视频的识别与缺口记录、**记录先按课程角色再按任务类型分栏且已截止项复查不重复播报**。
+12. [references/video-play-and-completion-bu.md](references/video-play-and-completion-bu.md) — **`bu` 下把视频播完并计入成绩**：视口仅 219px 宽导致播放按钮在视口外（合成事件无效，必须真点击；`Emulation.setDeviceMetricsOverride`/`ctrl+-`/改窗口均无效）→ 把 `.xt_video_player_container` 改成 `position:fixed;width:200px` 再 `click_xy`；`xt-wrap` 的 `unload` 类会强制 pause（去类 + 微调 `currentTime` + `play()` 才真播），16x 被平台 pause、2x 稳定；完成判据 `currentTime==duration` + 「已完成」，进度心跳回传滞后 5–7%；`logs/learn?actype=100` 恒空、`actype=-1` 无完成状态字段，故只能真播，不存在直接标记完成的接口。
 
 ## 通用硬约束
 
