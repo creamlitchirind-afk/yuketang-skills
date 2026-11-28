@@ -10,11 +10,11 @@
 
 ## 0. 先判断这是什么
 
-- 本仓库是**长江雨课堂学生端的技能与方法库**，不是安装包，也不是一键运行的程序。
-- 它提供页面结构、接口、操作流程、验证方法和已知坑；实际执行需要宿主提供浏览器工具和已登录的雨课堂账号。
+- 本仓库是**长江雨课堂学生端与学习通网页版的技能与方法库**，不是安装包，也不是一键运行的程序。
+- 它提供页面结构、接口、操作流程、验证方法和已知坑；实际执行需要宿主提供浏览器工具和已登录的对应平台账号。
 - 本仓库**不包含**账号、Cookie、Token 或任何人的课程数据。
 - 默认**只读**。只有用户当轮明确点名“完成/提交某项任务”时，才按对应 reference 做写操作。
-- 如果用户要的是完整 18 项能力菜单，那属于 `yuketang-capabilities` 能力台；本仓库负责具体执行细节。没有该能力台时，按本文件的“最小任务路由”直接做。
+- 如果用户要的是雨课堂完整 18 项能力菜单，那属于 `yuketang-capabilities` 能力台；如果用户要的是学习通 15 项菜单，读 `xuexitong-capabilities/capabilities-menu.md`。本仓库负责具体执行细节；没有对应能力台时，按本文件的“最小任务路由”直接做。
 
 ## 1. 拉取后的读取顺序
 
@@ -30,6 +30,8 @@ git log -1 --oneline
 2. `AI_START_HERE.md`（本文件）
 3. `yuketang-web-reverse/SKILL.md`
 4. 按当前任务读对应 reference（见第 2 节）
+
+如果任务是学习通，第 3 步改读 `xuexitong-capabilities/SKILL.md`，再按 `xuexitong-capabilities/capabilities-menu.md` 选编号；页面结构读 `xuexitong-capabilities/references/chaoxing-web-structure-20261123.md`。
 
 记录当前分支和 commit。后续汇报时写清楚“在哪个 commit 上执行”，不要假设版本永远不变。
 
@@ -49,6 +51,9 @@ git log -1 --oneline
 | 运行环境、远控、PIP、DEVICE_OFFLINE | `references/automation-environment-and-pitfalls.md` | 先排查环境，不要反复重试同一调用 |
 | 全量课程提取、成绩单口径、查重 | `docs/course-extraction.md` | 按文档的分区、类型矩阵和“未批改 ≠ 0 分”顺序读 |
 | 未完成巡检 / 定时汇报 / 课程数归并 | `yuketang-unfinished-watch/SKILL.md` | 先归并「N 门课（M 个班次）」，只报可做项；全无待办改报成绩构成 |
+| 学习通课程/资料/作业/学习记录/自测 | `xuexitong-capabilities/SKILL.md` + `xuexitong-capabilities/capabilities-menu.md` | 先扫码登录；跨域 iframe 把 `src` 当顶层 URL 打开；作业无截止时间，未交项只能列出 |
+| 学习通定时巡检 / 增量台账 | `xuexitong-capabilities/track/README.md` | 先设 `XT_WATCH_DIR`；`scan_xt_bu.py` 分段跑，`report_xt.py --final` 汇总 |
+| 学习通页面结构 / iframe / dataId | `xuexitong-capabilities/references/chaoxing-web-structure-20261123.md` | 课程 tab 用 `pageHeader`；资料下载依赖登录 cookie |
 | 影刀/RPA 环境与 JS | `references/rpa-tech-notes.md` | 注意 `execute_javascript` 的返回值和限流 |
 
 ### 最小能力清单
@@ -62,6 +67,8 @@ git log -1 --oneline
 - “写主观题 / 填作业答案” → `yuketang-homework-auto-fill/SKILL.md`
 - “查接口 / 页面怎么点 / 报错排查” → API、DOM 或环境 reference
 - “全量提取 / 查重 / 成绩口径” → `docs/course-extraction.md`
+- “学习通课程 / 资料 / 作业 / 学习记录 / 自测 / 错题” → `xuexitong-capabilities/SKILL.md` + 对应脚本
+- “学习通巡检 / 增量对比” → `xuexitong-capabilities/track/README.md`
 
 ## 3. 拉取成功后的第一次回复
 
@@ -90,10 +97,12 @@ git log -1 --oneline
 - **只读优先**：不签到、不改分、不移出班级、不报告老师。
 - **提交例外**：只有用户当轮明确点名“完成/提交某项任务”才做；只做被点名的项，逐题核对，交付里写清做了什么。
 - **不代提交主观题**：主观题只填不交，由用户核对后自行提交。
-- **验证码/风控**：遇到腾讯安全校验、滑块、扫码、设备验证，立即停手交用户，不尝试绕过。
+- **学习通同样只读**：不提交作业、不签到、不点答题、不进考试、不改分。
+- **验证码/风控**：遇到腾讯安全校验、滑块、扫码、设备验证，立即停手交用户，不尝试绕过；学习通扫码登录只发当前用户。
 - **不伪造结果**：以页面上的“学习进度 / 得分 / 状态 / 正确答案”为准；没有看到就说没有看到。
 - **不修改仓库**：执行任务的 AI 不要改仓库文件、不要运行安装器、不要全局注册 Skill；除非用户明确要求维护仓库。
 - **记录口径**：先按课程角色（学生 / 旁听）分，再按任务类型（作业 / 课件 / 课堂 / 考试）分栏。
+- **数据不入库**：账号、Cookie、Token、二维码 uuid、课程名、班级 ID、成绩、出勤、作业原文与课件原文件都不写入公开仓库。
 
 ## 6. 交付格式
 
@@ -128,6 +137,14 @@ git log -1 --oneline
 ```text
 拉取 https://github.com/creamlitchirind-afk/yuketang-skills.git，
 读 AI_START_HERE.md，先告诉我这个仓库能做什么，不要执行。
+```
+
+如果要执行学习通任务：
+
+```text
+拉取 https://github.com/creamlitchirind-afk/yuketang-skills.git，
+读 AI_START_HERE.md，执行学习通【课程名】的【任务名】；
+只读，不提交作业、不签到；需要扫码时把二维码发我。
 ```
 
 如果要完成具体任务：

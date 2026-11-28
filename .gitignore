@@ -1,0 +1,9 @@
+# 学习通运行时数据（含个人课程/作业/成绩/出勤，不公开）
+xuexitong-capabilities/data/*
+!xuexitong-capabilities/data/README.md
+xuexitong-capabilities/track/runs/
+xuexitong-capabilities/track/xt_state.json
+xuexitong-capabilities/track/baseline_xt.json
+xuexitong-capabilities/track/scan_last_out.txt
+xuexitong-capabilities/track/last_report_xt.md
+xuexitong-capabilities/track/last_run_xt_*.md

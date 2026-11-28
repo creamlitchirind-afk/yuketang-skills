@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>学习通能力台</title>
+<style>
+:root{--bg:#0c1720;--panel:#101f2b;--line:#1e3546;--text:#e8f2f7;--muted:#8fa9b8;--accent:#35c2b0;--ok:#28c08a;--warn:#e2a63a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 15% -10%,#153244 0,var(--bg) 55%);color:var(--text);font-family:"Microsoft YaHei","Segoe UI",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 60px}
+.head{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:24px}
+h1{font-size:32px;margin:0 0 8px;letter-spacing:.06em}.sub{color:var(--muted);font-size:13px;line-height:1.8}
+.badge{display:inline-flex;gap:8px;align-items:center;background:#122b35;border:1px solid #1b4a52;color:#8de0d4;padding:6px 10px;border-radius:999px;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:24px;color:var(--accent)}.stat span{font-size:12px;color:var(--muted)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 22px}
+input{flex:1;min-width:220px;background:#0b1922;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:12px 14px;font-size:14px;outline:none}
+input:focus{border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.card{background:linear-gradient(180deg,#10222f,#0e1c27);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;position:relative}
+.code{position:absolute;right:14px;top:14px;font-size:11px;letter-spacing:.12em;color:#5f8798}
+.cat{font-size:11px;color:var(--accent);letter-spacing:.12em;margin-bottom:8px}
+.name{font-size:17px;font-weight:700;margin:0 0 7px}
+.desc{font-size:12px;color:var(--muted);line-height:1.7;min-height:40px}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;border-top:1px dashed #1d3544;padding-top:10px}
+.status{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid}
+.ok{color:#8fe8c5;border-color:#1f6450;background:#0e2c25}.warn{color:#f2cd83;border-color:#6b5420;background:#2a2310}
+.route{font-size:11px;color:#6f93a3;max-width:58%;text-align:right;line-height:1.5}
+.note{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.9;border-left:2px solid var(--accent);padding-left:14px}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>学习通能力台</h1>
+      <div class="sub">课程 · 资料 · 章节 · 作业 · 考试 · 学习记录｜只读，不提交作业、不签到、不改分</div>
+    </div>
+    <div class="badge">15 项 · 4 组 · 2026-11-23 首版</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="s1">15</b><span>能力总数</span></div>
+    <div class="stat"><b id="s2">12</b><span>已实测可用</span></div>
+    <div class="stat"><b id="s3">3</b><span>待验证</span></div>
+    <div class="stat"><b id="s4">0</b><span>写操作</span></div>
+  </div>
+
+  <div class="tools"><input id="q" placeholder="搜索：资料 / 作业 / 学习记录 / 二维码 / 转 PDF"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="note">
+    入口：<b>调用我的学习通能力</b>。数据底座为云浏览器 <b>bu</b>；作业与学习记录 iframe 跨域时，先把 iframe 的 src 当顶层 URL 打开。同名课程按 clazzid 区分，具体班次数随账号变化。
+  </div>
+</div>
+<script>
+const DATA = [
+  {code:"A1",cat:"A 资料与课件",name:"课程清单",desc:"个人空间课程卡片 → 标题 / 教师 / courseid / clazzid / 进度（页面有则读）",status:"ok",route:"scripts/course-list.js"},
+  {code:"A2",cat:"A 资料与课件",name:"资料清单 + 直链",desc:"资料页文件夹与文件 → 名称 / 大小 / dataId / 下载链接",status:"ok",route:"scripts/materials-list.js"},
+  {code:"A3",cat:"A 资料与课件",name:"单文件下载",desc:"按 dataId 直链下载原文件，核对 bytes 与扩展名",status:"ok",route:"bu.download()"},
+  {code:"A4",cat:"A 资料与课件",name:"PPT/PDF 转 PDF",desc:"PPT/PDF 课件转 PDF，保留页序与文件名",status:"ok",route:"scripts/convert-ppt-to-pdf.ps1"},
+  {code:"A5",cat:"A 资料与课件",name:"章节任务点",desc:"章 / 节 / 任务点层级与“已完成 x/y”",status:"ok",route:"scripts/chapter-list.js"},
+  {code:"B1",cat:"B 作业与考试",name:"作业清单",desc:"标题 / 状态 / workId / answerId，识别未交与待批阅",status:"ok",route:"scripts/homework-list.js"},
+  {code:"B2",cat:"B 作业与考试",name:"考试清单",desc:"考试标题 / 状态 / 时间；单课程已验证“暂无考试”场景，其余课程待逐课核验",status:"ok",route:"scripts/exam-list.js"},
+  {code:"B3",cat:"B 作业与考试",name:"学习记录 / 出勤",desc:"任务点、排名、积分、签到、出勤率与学习任务",status:"ok",route:"scripts/study-record.js"},
+  {code:"B4",cat:"B 作业与考试",name:"成绩 / 积分明细",desc:"课程积分、作业得分、测验得分的可读明细",status:"warn",route:"待查积分详情"},
+  {code:"C1",cat:"C 题库与自测",name:"错题集",desc:"错题列表与题目详情，只读，不提交答案",status:"warn",route:"scripts/wrong-questions.js"},
+  {code:"C2",cat:"C 题库与自测",name:"自测 / 测验",desc:"自测记录、章节测验与题目数量",status:"ok",route:"scripts/self-test-list.js"},
+  {code:"D1",cat:"D 运维与情报",name:"登录检查 / 二维码",desc:"扫码登录、登录态检查、二维码发送与用户接管",status:"ok",route:"#quickCode + 用户接管"},
+  {code:"D2",cat:"D 运维与情报",name:"课程结构查询",desc:"tab / pageHeader / iframe 拓扑 / 资料 dataId 定位",status:"ok",route:"references/chaoxing-web-structure"},
+  {code:"D3",cat:"D 运维与情报",name:"全量课程台账",desc:"当前账号全部课程卡片与班次的稳定台账（运行时生成）",status:"ok",route:"data/course-list"},
+  {code:"D4",cat:"D 运维与情报",name:"增量快照 / 对比",desc:"与上次快照对比课程、资料、作业的新增与状态变化",status:"warn",route:"待实现 diff"}
+];
+const grid = document.getElementById('grid');
+const q = document.getElementById('q');
+function render(){
+  const kw = q.value.trim().toLowerCase();
+  const list = DATA.filter(x => !kw || (x.code+" "+x.cat+" "+x.name+" "+x.desc+" "+x.route).toLowerCase().includes(kw));
+  grid.innerHTML = list.map(x => `<div class="card">
+    <div class="code">${x.code}</div>
+    <div class="cat">${x.cat}</div>
+    <div class="name">${x.name}</div>
+    <div class="desc">${x.desc}</div>
+    <div class="foot"><span class="status ${x.status==='ok'?'ok':'warn'}">${x.status==='ok'?'已实测':'待验证'}</span><span class="route">${x.route}</span></div>
+  </div>`).join('');
+}
+q.addEventListener('input', render); render();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
-# 雨课堂（长江雨课堂）自动化技能包
+# 雨课堂（长江雨课堂）与学习通（超星）自动化技能包
 
-面向长江雨课堂学生端（`changjiang.yuketang.cn`）的两个可复用技能（Skill），按 `SKILL.md` 规范组织，可被支持该规范的 Agent 直接加载。
+面向长江雨课堂学生端（`changjiang.yuketang.cn`）的三个可复用技能，以及学习通网页版（`chaoxing.com`）的只读能力台，按 `SKILL.md` 规范组织，可被支持该规范的 Agent 直接加载。
 
 > **给 AI：首次拉取本仓库，先读 [AI_START_HERE.md](AI_START_HERE.md)。**
 
@@ -27,6 +27,7 @@
 | [`yuketang-web-reverse`](yuketang-web-reverse/SKILL.md) | 学生端网页与接口结构拆解：课程清单接口、单门课程未完成扫描、课件逐页阅读推进（PageDown 翻页、每页停留计页、**内嵌选择题作答**）、课堂报告取题、课件打印导出、**客观题选择与提交（作业逐题提交 / PPT 内嵌单选题真实点击法 / 云浏览器下的拖拽翻页与阅读计时）**；含运行环境与故障排查（远控禁切虚拟桌面、PIP 切换失败、DEVICE_OFFLINE 等） |
 | [`yuketang-homework-auto-fill`](yuketang-homework-auto-fill/SKILL.md) | 主观题作业自动填写：定位 UEditor → 官方 API 写入 → 读回校验 → **不提交**，把纯文本答案交给用户自行提交 |
 | [`yuketang-unfinished-watch`](yuketang-unfinished-watch/SKILL.md) | 未完成待办巡检与汇报：每轮自动发现全部课程、按课程名归并同名班次报「N 门课（M 个班次）」、只读扫描未完成、剔除已超时/已截止/未签到/上课中等不可做项、与基线比对新增、可选 Qmsg 推送，按“分课分节”版式汇报，全无待办时改报成绩构成 |
+| [`xuexitong-capabilities`](xuexitong-capabilities/SKILL.md) | 学习通（超星）网页版只读能力台：登录检查、课程清单、资料清单与 dataId 下载、章节任务点、作业/考试清单、学习记录与出勤、自测/错题集、PPT→PDF，以及云浏览器 `bu` 下的两段式巡检脚本；默认不提交、不签到、不改分 |
 
 ## 目录结构
 
@@ -50,7 +51,27 @@ yuketang-homework-auto-fill/
 └── SKILL.md
 yuketang-unfinished-watch/
 └── SKILL.md                            # 未完成巡检、归并课程数、基线比对与汇报版式
+xuexitong-capabilities/
+├── SKILL.md                            # 学习通只读能力台入口
+├── capabilities-menu.md                # 15 项菜单与路由
+├── capabilities-panel.html             # 离线可搜索面板
+├── references/
+│   ├── chaoxing-web-structure-20261123.md  # 登录、tab、iframe、dataId、各页结构
+│   └── verification-20261123.md        # 脱敏后的能力核验摘要
+├── scripts/                            # 浏览器内只读片段与 PPT→PDF
+├── track/                              # 两段式巡检脚本
+└── data/                               # 运行时数据目录（不入库）
 ```
+
+## 学习通能力台
+
+学习通部分与雨课堂技能共用同一套“只读优先”约定，但入口与页面结构不同：登录走学习通 App 扫码，课程入口在个人空间，作业/学习记录/考试等 iframe 多数跨域，需要把 iframe 的 `src` 当顶层 URL 打开后再读。
+
+- 能力菜单：`xuexitong-capabilities/capabilities-menu.md`
+- 页面结构：`xuexitong-capabilities/references/chaoxing-web-structure-20261123.md`
+- 核验摘要：`xuexitong-capabilities/references/verification-20261123.md`
+- 巡检脚本：`xuexitong-capabilities/track/README.md`
+- 数据目录：`xuexitong-capabilities/data/` 只保留说明；运行数据在仓库外生成，避免个人课程/成绩入库。
 
 ## 方法文档
 
@@ -63,10 +84,11 @@ yuketang-unfinished-watch/
 
 ## 使用约定（重要）
 
-- **只读优先**：默认只做读取与统计，不提交作业、不签到、不退出课程。
+- **只读优先**：默认只做读取与统计，不提交作业、不签到、不退出课程；学习通部分同样只读。
 - **不代提交**：作业填写完成后由用户自行核对并提交。
 - **提交例外**：仅当用户当轮明确点名要完成某份作业/某个课件题时，才按 [`answer-selection-and-submit.md`](yuketang-web-reverse/references/answer-selection-and-submit.md) 作答并提交；逐题核对答案，交付里写清提交了什么；遇验证码/守卫弹窗立即停手交用户。
 - **合规使用**：仅在本人账号、本人课程范围内使用，遵守学校与平台规定。
+- **数据不入库**：账号、Cookie、Token、二维码 uuid、课程名、班级 ID、成绩、出勤、作业原文与课件原文件都不写入公开仓库；学习通运行数据写到仓库外的 `XT_WATCH_DIR`。
 - 文中出现的课程 id、班级 id 仅为格式示例，不代表任何固定课程。
 
 ## 安装
@@ -74,7 +96,7 @@ yuketang-unfinished-watch/
 把整个目录复制到 Agent 的 skills 目录即可，例如：
 
 ```bash
-cp -r yuketang-web-reverse yuketang-homework-auto-fill ~/.doubao/agent_mode/workspace/.skills/
+cp -r yuketang-web-reverse yuketang-homework-auto-fill yuketang-unfinished-watch xuexitong-capabilities ~/.doubao/agent_mode/workspace/.skills/
 ```
 
 ## 许可
